@@ -1,0 +1,8 @@
+# Run these commands from inside the unzipped "instagram-scheduler" folder
+
+git init
+git branch -M main
+git remote add origin https://github.com/Githosting93/instagram-scheduler.git
+git add .
+git commit -m "Initial commit: Instagram Reel auto-poster pipeline"
+git push -u origin main

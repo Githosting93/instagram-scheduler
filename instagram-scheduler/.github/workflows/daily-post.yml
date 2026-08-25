@@ -1,0 +1,41 @@
+name: Daily Instagram Reel Post
+
+on:
+  schedule:
+    # Runs at 13:00 UTC = 6:30 PM IST. Adjust to your preferred posting time.
+    - cron: "0 13 * * *"
+  workflow_dispatch: {}   # lets you trigger it manually from the Actions tab
+
+permissions:
+  contents: write   # needed so the workflow can commit the queue -> posted move
+
+jobs:
+  post-reel:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Publish next queued video
+        env:
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          IG_BUSINESS_ID: ${{ secrets.IG_BUSINESS_ID }}
+        run: python scripts/publish_video.py
+
+      - name: Commit queue -> posted move
+        run: |
+          git config user.name "instagram-scheduler-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add videos/ captions/
+          git diff --cached --quiet || git commit -m "chore: mark video as posted [skip ci]"
+          git push
